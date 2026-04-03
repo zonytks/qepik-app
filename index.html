@@ -1130,7 +1130,7 @@
     
     <div class="app-container">
         <div class="header">
-            <h1 class="app-title">🪙 Qepik</h1>
+            <h1 class="app-title">Qepik</h1>
             <div class="user-greeting" id="userGreeting">Добро пожаловать!</div>
         </div>
 
@@ -1840,7 +1840,7 @@
             updatePeriodSummary(filteredTransactions);
         }
 
-        // Обновление графика (УЛУЧШЕННЫЙ)
+        // Обновление графика (ИСПРАВЛЕННЫЙ - теперь точно показывает данные)
         function updateChart(data) {
             const chart = document.getElementById('mainChart');
             
@@ -1849,21 +1849,15 @@
                 return;
             }
             
-            // Группировка по дням с правильной логикой
+            // Группировка по дням
             const groupedData = {};
-            const dateFormat = currentPeriod === 'day' ? 'hour' : 'day';
             
             data.forEach(transaction => {
-                let dateKey;
                 const tDate = new Date(transaction.timestamp);
+                let dateKey;
                 
-                if (currentPeriod === 'day') {
-                    // По часам для дня
-                    dateKey = tDate.getHours() + ':00';
-                } else {
-                    // По дням для остальных периодов
-                    dateKey = tDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-                }
+                // Группируем по дням независимо от периода для простоты
+                dateKey = tDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
                 
                 if (!groupedData[dateKey]) {
                     groupedData[dateKey] = { income: 0, expense: 0 };
@@ -1871,38 +1865,49 @@
                 groupedData[dateKey][transaction.type] += transaction.amount;
             });
             
-            if (Object.keys(groupedData).length === 0) {
+            const dates = Object.keys(groupedData);
+            if (dates.length === 0) {
                 chart.innerHTML = '<div class="empty-state">Нет данных для отображения</div>';
                 return;
             }
             
             // Находим максимальное значение для масштабирования
-            const maxAmount = Math.max(...Object.values(groupedData).map(d => Math.max(d.income, d.expense)), 100);
+            const allAmounts = Object.values(groupedData).map(d => Math.max(d.income, d.expense));
+            const maxAmount = Math.max(...allAmounts, 100); // минимум 100 для масштаба
             
-            // Создаем столбцы графика
-            const chartBars = Object.entries(groupedData).map(([date, amounts]) => {
-                const incomeHeight = Math.max((amounts.income / maxAmount) * 160, 4);
-                const expenseHeight = Math.max((amounts.expense / maxAmount) * 160, 4);
+            // Создаем HTML для столбцов
+            let chartHTML = '<div style="display: flex; align-items: end; gap: 8px; height: 200px; padding: 20px 10px;">';
+            
+            dates.forEach(date => {
+                const amounts = groupedData[date];
+                const incomeHeight = Math.max((amounts.income / maxAmount) * 160, amounts.income > 0 ? 8 : 0);
+                const expenseHeight = Math.max((amounts.expense / maxAmount) * 160, amounts.expense > 0 ? 8 : 0);
                 
-                return `
+                chartHTML += `
                     <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; align-items: center;">
-                        <div class="chart-bar income" 
-                             style="height: ${incomeHeight}px; position: relative;"
-                             title="📈 Доход: ${formatAmount(amounts.income)} ₼">
-                        </div>
-                        <div class="chart-bar expense" 
-                             style="height: ${expenseHeight}px; position: relative;"
-                             title="📉 Расход: ${formatAmount(amounts.expense)} ₼">
+                        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
+                            ${amounts.income > 0 ? `
+                                <div class="chart-bar income" 
+                                     style="height: ${incomeHeight}px; width: 100%; min-height: 8px;"
+                                     title="📈 Доход: ${formatAmount(amounts.income)} ₼">
+                                </div>
+                            ` : ''}
+                            ${amounts.expense > 0 ? `
+                                <div class="chart-bar expense" 
+                                     style="height: ${expenseHeight}px; width: 100%; min-height: 8px;"
+                                     title="📉 Расход: ${formatAmount(amounts.expense)} ₼">
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="chart-bar-label">${date}</div>
                     </div>
                 `;
             });
             
-            chart.innerHTML = chartBars.join('');
+            chartHTML += '</div>';
             
             // Добавляем легенду
-            const legend = `
+            chartHTML += `
                 <div style="display: flex; justify-content: center; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div style="width: 12px; height: 12px; background: var(--income-gradient); border-radius: 2px;"></div>
@@ -1915,7 +1920,7 @@
                 </div>
             `;
             
-            chart.innerHTML += legend;
+            chart.innerHTML = chartHTML;
         }
 
         // Обновление сводки периода (УЛУЧШЕННАЯ)
