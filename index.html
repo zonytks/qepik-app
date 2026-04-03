@@ -1840,87 +1840,91 @@
             updatePeriodSummary(filteredTransactions);
         }
 
-        // Обновление графика (ИСПРАВЛЕННЫЙ - теперь точно показывает данные)
+        // Простой график который точно работает
         function updateChart(data) {
             const chart = document.getElementById('mainChart');
             
             if (data.length === 0) {
-                chart.innerHTML = '<div class="empty-state">Нет операций за выбранный период.<br>Добавьте доходы или расходы для аналитики! 📊</div>';
+                chart.innerHTML = '<div class="empty-state">Нет операций за выбранный период</div>';
                 return;
             }
             
-            // Группировка по дням
-            const groupedData = {};
+            // Считаем общие суммы за период
+            let totalIncome = 0;
+            let totalExpense = 0;
             
             data.forEach(transaction => {
-                const tDate = new Date(transaction.timestamp);
-                let dateKey;
-                
-                // Группируем по дням независимо от периода для простоты
-                dateKey = tDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-                
-                if (!groupedData[dateKey]) {
-                    groupedData[dateKey] = { income: 0, expense: 0 };
+                if (transaction.type === 'income') {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpense += transaction.amount;
                 }
-                groupedData[dateKey][transaction.type] += transaction.amount;
             });
             
-            const dates = Object.keys(groupedData);
-            if (dates.length === 0) {
-                chart.innerHTML = '<div class="empty-state">Нет данных для отображения</div>';
-                return;
-            }
+            // Максимальное значение для масштабирования
+            const maxAmount = Math.max(totalIncome, totalExpense, 100);
             
-            // Находим максимальное значение для масштабирования
-            const allAmounts = Object.values(groupedData).map(d => Math.max(d.income, d.expense));
-            const maxAmount = Math.max(...allAmounts, 100); // минимум 100 для масштаба
+            // Высота столбцов
+            const incomeHeight = totalIncome > 0 ? Math.max((totalIncome / maxAmount) * 150, 20) : 0;
+            const expenseHeight = totalExpense > 0 ? Math.max((totalExpense / maxAmount) * 150, 20) : 0;
             
-            // Создаем HTML для столбцов
-            let chartHTML = '<div style="display: flex; align-items: end; gap: 8px; height: 200px; padding: 20px 10px;">';
-            
-            dates.forEach(date => {
-                const amounts = groupedData[date];
-                const incomeHeight = Math.max((amounts.income / maxAmount) * 160, amounts.income > 0 ? 8 : 0);
-                const expenseHeight = Math.max((amounts.expense / maxAmount) * 160, amounts.expense > 0 ? 8 : 0);
-                
-                chartHTML += `
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; align-items: center;">
-                        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
-                            ${amounts.income > 0 ? `
-                                <div class="chart-bar income" 
-                                     style="height: ${incomeHeight}px; width: 100%; min-height: 8px;"
-                                     title="📈 Доход: ${formatAmount(amounts.income)} ₼">
-                                </div>
-                            ` : ''}
-                            ${amounts.expense > 0 ? `
-                                <div class="chart-bar expense" 
-                                     style="height: ${expenseHeight}px; width: 100%; min-height: 8px;"
-                                     title="📉 Расход: ${formatAmount(amounts.expense)} ₼">
-                                </div>
-                            ` : ''}
+            // Простой HTML с двумя столбцами
+            chart.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: end; gap: 40px; height: 180px; padding: 20px;">
+                    
+                    <!-- Столбец доходов -->
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="
+                            width: 60px; 
+                            height: ${incomeHeight}px; 
+                            background: linear-gradient(135deg, #22c55e, #16a34a); 
+                            border-radius: 6px;
+                            display: flex;
+                            align-items: end;
+                            justify-content: center;
+                            padding-bottom: 8px;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 0.8rem;
+                        ">
+                            ${totalIncome > 0 ? formatAmount(totalIncome) : ''}
                         </div>
-                        <div class="chart-bar-label">${date}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+                            📈 Доходы
+                        </div>
                     </div>
-                `;
-            });
-            
-            chartHTML += '</div>';
-            
-            // Добавляем легенду
-            chartHTML += `
-                <div style="display: flex; justify-content: center; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 12px; height: 12px; background: var(--income-gradient); border-radius: 2px;"></div>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Доходы</span>
+                    
+                    <!-- Столбец расходов -->
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="
+                            width: 60px; 
+                            height: ${expenseHeight}px; 
+                            background: linear-gradient(135deg, #ef4444, #dc2626); 
+                            border-radius: 6px;
+                            display: flex;
+                            align-items: end;
+                            justify-content: center;
+                            padding-bottom: 8px;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 0.8rem;
+                        ">
+                            ${totalExpense > 0 ? formatAmount(totalExpense) : ''}
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+                            📉 Расходы
+                        </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 12px; height: 12px; background: var(--expense-gradient); border-radius: 2px;"></div>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Расходы</span>
+                    
+                </div>
+                
+                <!-- Информация о периоде -->
+                <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600;">
+                        Всего операций: ${data.length}
                     </div>
                 </div>
             `;
-            
-            chart.innerHTML = chartHTML;
         }
 
         // Обновление сводки периода (УЛУЧШЕННАЯ)
