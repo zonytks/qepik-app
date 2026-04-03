@@ -1095,6 +1095,10 @@
                 grid-template-columns: 1fr;
             }
             
+            .analytics-summary .summary-card {
+                margin-bottom: 12px;
+            }
+            
             .piggy-bank-actions {
                 grid-template-columns: 1fr;
             }
@@ -1799,7 +1803,7 @@
             updateAnalytics();
         }
 
-        // Обновление аналитики
+        // Обновление аналитики (ИСПРАВЛЕННАЯ)
         function updateAnalytics() {
             const now = new Date();
             let filteredTransactions = [];
@@ -1815,7 +1819,7 @@
                     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                     filteredTransactions = transactions.filter(t => {
                         const tDate = new Date(t.timestamp);
-                        return tDate >= weekAgo;
+                        return tDate >= weekAgo && tDate <= now;
                     });
                     break;
                 case 'month':
@@ -1836,47 +1840,85 @@
             updatePeriodSummary(filteredTransactions);
         }
 
-        // Обновление графика (ИСПРАВЛЕННО - правильный расчет баланса)
+        // Обновление графика (УЛУЧШЕННЫЙ)
         function updateChart(data) {
             const chart = document.getElementById('mainChart');
             
             if (data.length === 0) {
-                chart.innerHTML = '<div class="empty-state">Нет данных за выбранный период</div>';
+                chart.innerHTML = '<div class="empty-state">Нет операций за выбранный период.<br>Добавьте доходы или расходы для аналитики! 📊</div>';
                 return;
             }
             
+            // Группировка по дням с правильной логикой
             const groupedData = {};
+            const dateFormat = currentPeriod === 'day' ? 'hour' : 'day';
+            
             data.forEach(transaction => {
-                const date = new Date(transaction.timestamp).toLocaleDateString('ru-RU');
-                if (!groupedData[date]) {
-                    groupedData[date] = { income: 0, expense: 0 };
+                let dateKey;
+                const tDate = new Date(transaction.timestamp);
+                
+                if (currentPeriod === 'day') {
+                    // По часам для дня
+                    dateKey = tDate.getHours() + ':00';
+                } else {
+                    // По дням для остальных периодов
+                    dateKey = tDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
                 }
-                groupedData[date][transaction.type] += transaction.amount;
+                
+                if (!groupedData[dateKey]) {
+                    groupedData[dateKey] = { income: 0, expense: 0 };
+                }
+                groupedData[dateKey][transaction.type] += transaction.amount;
             });
             
-            const maxAmount = Math.max(...Object.values(groupedData).map(d => Math.max(d.income, d.expense)));
+            if (Object.keys(groupedData).length === 0) {
+                chart.innerHTML = '<div class="empty-state">Нет данных для отображения</div>';
+                return;
+            }
             
-            chart.innerHTML = Object.entries(groupedData).map(([date, amounts]) => {
-                const incomeHeight = (amounts.income / maxAmount) * 160;
-                const expenseHeight = (amounts.expense / maxAmount) * 160;
+            // Находим максимальное значение для масштабирования
+            const maxAmount = Math.max(...Object.values(groupedData).map(d => Math.max(d.income, d.expense)), 100);
+            
+            // Создаем столбцы графика
+            const chartBars = Object.entries(groupedData).map(([date, amounts]) => {
+                const incomeHeight = Math.max((amounts.income / maxAmount) * 160, 4);
+                const expenseHeight = Math.max((amounts.expense / maxAmount) * 160, 4);
                 
                 return `
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; align-items: center;">
                         <div class="chart-bar income" 
-                             style="height: ${incomeHeight}px"
-                             title="Доход: ${formatAmount(amounts.income)} ₼">
+                             style="height: ${incomeHeight}px; position: relative;"
+                             title="📈 Доход: ${formatAmount(amounts.income)} ₼">
                         </div>
                         <div class="chart-bar expense" 
-                             style="height: ${expenseHeight}px"
-                             title="Расход: ${formatAmount(amounts.expense)} ₼">
+                             style="height: ${expenseHeight}px; position: relative;"
+                             title="📉 Расход: ${formatAmount(amounts.expense)} ₼">
                         </div>
-                        <div class="chart-bar-label">${date.split('.').slice(0, 2).join('.')}</div>
+                        <div class="chart-bar-label">${date}</div>
                     </div>
                 `;
-            }).join('');
+            });
+            
+            chart.innerHTML = chartBars.join('');
+            
+            // Добавляем легенду
+            const legend = `
+                <div style="display: flex; justify-content: center; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 12px; height: 12px; background: var(--income-gradient); border-radius: 2px;"></div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Доходы</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 12px; height: 12px; background: var(--expense-gradient); border-radius: 2px;"></div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Расходы</span>
+                    </div>
+                </div>
+            `;
+            
+            chart.innerHTML += legend;
         }
 
-        // Обновление сводки периода
+        // Обновление сводки периода (УЛУЧШЕННАЯ)
         function updatePeriodSummary(data) {
             let totalIncome = 0;
             let totalExpense = 0;
@@ -1889,8 +1931,41 @@
                 }
             });
             
-            document.getElementById('periodIncome').textContent = formatAmount(totalIncome) + ' ₼';
-            document.getElementById('periodExpense').textContent = formatAmount(totalExpense) + ' ₼';
+            const netResult = totalIncome - totalExpense;
+            
+            // Обновляем доходы
+            const periodIncomeElement = document.getElementById('periodIncome');
+            periodIncomeElement.textContent = formatAmount(totalIncome) + ' ₼';
+            periodIncomeElement.className = 'summary-value positive';
+            
+            // Обновляем расходы
+            const periodExpenseElement = document.getElementById('periodExpense');
+            periodExpenseElement.textContent = formatAmount(totalExpense) + ' ₼';
+            periodExpenseElement.className = 'summary-value negative';
+            
+            // Добавляем информацию о чистом результате если нужно
+            const summaryCards = document.querySelector('.analytics-summary');
+            
+            // Убираем старую карточку результата если есть
+            const existingNetCard = summaryCards.querySelector('.net-result-card');
+            if (existingNetCard) {
+                existingNetCard.remove();
+            }
+            
+            // Добавляем карточку с чистым результатом
+            const netResultCard = document.createElement('div');
+            netResultCard.className = 'summary-card net-result-card';
+            netResultCard.innerHTML = `
+                <div class="summary-value ${netResult >= 0 ? 'positive' : 'negative'}">
+                    ${netResult >= 0 ? '+' : ''}${formatAmount(netResult)} ₼
+                </div>
+                <div class="summary-label">${netResult >= 0 ? 'Профицит' : 'Дефицит'}</div>
+            `;
+            
+            summaryCards.appendChild(netResultCard);
+            
+            // Обновляем стили сетки для 3 карточек
+            summaryCards.style.gridTemplateColumns = 'repeat(3, 1fr)';
         }
 
         // Обновление курсов валют (реальные курсы для Баку)
@@ -1965,7 +2040,7 @@
             updateTransactionsList();
         }
 
-        // Обновление баланса (ИСПРАВЛЕННОЕ)
+        // Обновление баланса (ИСПРАВЛЕННОЕ - с отрицательным балансом)
         function updateBalance() {
             let balance = 0;
             let totalIncome = 0;
@@ -1981,7 +2056,16 @@
                 }
             });
 
-            document.getElementById('balance').textContent = formatAmount(balance) + ' ₼';
+            // Отображение баланса с правильным знаком
+            const balanceElement = document.getElementById('balance');
+            if (balance >= 0) {
+                balanceElement.textContent = formatAmount(balance) + ' ₼';
+                balanceElement.style.color = 'var(--text-primary)';
+            } else {
+                balanceElement.textContent = '-' + formatAmount(Math.abs(balance)) + ' ₼';
+                balanceElement.style.color = 'var(--expense-color)';
+            }
+
             document.getElementById('totalIncome').textContent = formatAmount(totalIncome) + ' ₼';
             document.getElementById('totalExpense').textContent = formatAmount(totalExpense) + ' ₼';
         }
