@@ -60,19 +60,23 @@
             background-size:400% 400%;animation:glassBg 15s ease infinite;
         }
         @keyframes glassBg{0%,100%{background-position:0% 50%}25%{background-position:100% 0%}50%{background-position:100% 100%}75%{background-position:0% 100%}}
-        .glass-orbs{display:none;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden}
+
+        .glass-orbs{
+            display:none;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden
+        }
         [data-theme="glass"] .glass-orbs{display:block}
         .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.3;animation:orbF 20s ease-in-out infinite}
         .orb:nth-child(1){width:300px;height:300px;background:#6c5ce7;top:-50px;left:-50px}
         .orb:nth-child(2){width:250px;height:250px;background:#a78bfa;bottom:-30px;right:-30px;animation-delay:-5s}
         .orb:nth-child(3){width:200px;height:200px;background:#3b82f6;top:40%;left:60%;animation-delay:-10s}
         @keyframes orbF{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.1)}66%{transform:translate(-20px,20px) scale(0.9)}}
+
         .wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:16px 16px 100px}
-        .gc{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-card);transition:all 0.3s ease}
+        .gc{position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-card);transition:all 0.3s ease}
         [data-theme="glass"] .gc{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
 
         /* Header */
-        .hdr{padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+        .hdr{padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;overflow:visible}
         .hdr-left{display:flex;align-items:center;gap:12px}
         .logo{font-family:'Unbounded',sans-serif;font-size:1.5rem;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em}
         .greet{font-size:0.8rem;color:var(--text-muted);font-weight:500;margin-top:2px}
@@ -80,7 +84,7 @@
         .hbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all 0.2s;position:relative}
         [data-theme="glass"] .hbtn{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
         .hbtn:active{transform:scale(0.92)}
-        .dd{position:absolute;top:44px;right:0;min-width:150px;background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.3);z-index:100;overflow:hidden;animation:ddIn 0.2s ease}
+        .dd{position:fixed;min-width:150px;background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.3);z-index:9999;overflow:hidden;animation:ddIn 0.2s ease}
         [data-theme="glass"] .dd{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
         [data-theme="light"] .dd{box-shadow:0 8px 30px rgba(0,0,0,0.12)}
         .ddi{padding:12px 16px;font-size:0.85rem;color:var(--text-secondary);cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:10px;font-weight:500}
@@ -260,16 +264,8 @@
     <div class="hdr gc">
         <div class="hdr-left"><div><div class="logo">qepik</div><div class="greet" id="greet">...</div></div></div>
         <div class="hdr-acts">
-            <div style="position:relative"><button class="hbtn" onclick="togDD('ld')">&#127760;</button><div class="dd" id="ld" style="display:none">
-                <div class="ddi" onclick="setL('az')">&#127462;&#127487; Az&#601;rbaycan</div>
-                <div class="ddi" onclick="setL('ru')">&#127479;&#127482; &#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</div>
-                <div class="ddi" onclick="setL('en')">&#127468;&#127463; English</div>
-            </div></div>
-            <div style="position:relative"><button class="hbtn" onclick="togDD('td')">&#127912;</button><div class="dd" id="td" style="display:none">
-                <div class="ddi" onclick="setTh('dark')">&#127769; <span data-t="theme_dark">&#1058;&#1105;&#1084;&#1085;&#1072;&#1103;</span></div>
-                <div class="ddi" onclick="setTh('light')">&#9728;&#65039; <span data-t="theme_light">&#1057;&#1074;&#1077;&#1090;&#1083;&#1072;&#1103;</span></div>
-                <div class="ddi" onclick="setTh('glass')">&#128142; <span data-t="theme_glass">&#1057;&#1090;&#1077;&#1082;&#1083;&#1086;</span></div>
-            </div></div>
+            <div><button class="hbtn" onclick="togDD('ld',event)">&#127760;</button></div>
+            <div><button class="hbtn" onclick="togDD('td',event)">&#127912;</button></div>
         </div>
     </div>
     <div class="tabs">
@@ -342,6 +338,16 @@
     <button class="sbtn i" id="sB" onclick="addTx()" data-t="add_income">&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100;</button>
 </div>
 <div id="mB"></div>
+<div class="dd" id="ld" style="display:none">
+    <div class="ddi" onclick="setL('az')">&#127462;&#127487; Az&#601;rbaycan</div>
+    <div class="ddi" onclick="setL('ru')">&#127479;&#127482; &#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</div>
+    <div class="ddi" onclick="setL('en')">&#127468;&#127463; English</div>
+</div>
+<div class="dd" id="td" style="display:none">
+    <div class="ddi" onclick="setTh('dark')">&#127769; <span data-t="theme_dark">&#1058;&#1105;&#1084;&#1085;&#1072;&#1103;</span></div>
+    <div class="ddi" onclick="setTh('light')">&#9728;&#65039; <span data-t="theme_light">&#1057;&#1074;&#1077;&#1090;&#1083;&#1072;&#1103;</span></div>
+    <div class="ddi" onclick="setTh('glass')">&#128142; <span data-t="theme_glass">&#1057;&#1090;&#1077;&#1082;&#1083;&#1086;</span></div>
+</div>
 <script>
 var T={az:{tab_finance:'Maliyy\u0259',tab_piggy:'Y\u0131\u011f\u0131m',tab_analytics:'Analitika',tab_currency:'Valyuta',current_balance:'Cari balans',incomes:'G\u0259lirl\u0259r',expenses:'X\u0259rcl\u0259r',history:'\u018fm\u0259liyyat tarix\u00e7\u0259si',empty_tx:'H\u0259l\u0259 \u0259m\u0259liyyat yoxdur',income:'G\u0259lir',expense:'X\u0259rc',amount:'M\u0259bl\u0259\u011f',category:'Kateqoriya',comment_ph:'\u015e\u0259rh (ixtiyari)',add_income:'G\u0259lir \u0259lav\u0259 et',add_expense:'X\u0259rc \u0259lav\u0259 et',p_day:'G\u00fcn',p_week:'H\u0259ft\u0259',p_month:'Ay',p_year:'\u0130l',per_day:'G\u00fcn \u00fczr\u0259',per_week:'H\u0259ft\u0259 \u00fczr\u0259',per_month:'Ay \u00fczr\u0259',per_year:'\u0130l \u00fczr\u0259',expense_by_cat:'Kateqoriyalar \u00fczr\u0259',top_expenses:'\u018fn \u00e7ox x\u0259rcl\u0259r',no_data_period:'M\u0259lumat yoxdur',exchange_rates:'M\u0259z\u0259nn\u0259l\u0259r (Bak\u0131)',converter:'Konverter',from:'Haradan',to:'Haraya',result:'N\u0259tic\u0259',theme_dark:'T\u00fcnd',theme_light:'A\u00e7\u0131q',theme_glass:'\u015e\u00fc\u015f\u0259',hello:'Salam',welcome:'Xo\u015f g\u0259ldiniz!',delete_tx:'Silinsin?',delete_tx_text:'Geri qaytar\u0131la bilm\u0259z.',delete:'Sil',cancel:'L\u0259\u011fv et',new_piggy:'Yeni y\u0131\u011f\u0131m',piggy_name:'Ad',piggy_goal:'H\u0259d\u0259f',create:'Yarat',add_to_piggy:'\u018flav\u0259 et',take_from_piggy:'G\u00f6t\u00fcr',available:'M\u00f6vcud',add:'\u018flav\u0259',take:'G\u00f6t\u00fcr',edit_piggy:'D\u0259yi\u015f',save:'Saxla',delete_piggy:'Silinsin?',delete_piggy_text:'silin\u0259c\u0259k.',create_piggy:'Y\u0131\u011f\u0131m yarat',surplus:'Art\u0131q',deficit:'K\u0259sir',cat_salary:'Maa\u015f',cat_freelance:'Frilanser',cat_invest:'\u0130nvestisiya',cat_gift:'H\u0259diyy\u0259',cat_other:'Dig\u0259r',cat_food:'\u018frzaq',cat_transport:'N\u0259qliyyat',cat_fun:'\u018fyl\u0259nc\u0259',cat_bills:'Kommunal',cat_clothes:'Geyim',cat_health:'Sa\u011flaml\u0131q',cat_edu:'T\u0259hsil',enter_amount:'D\u00fczg\u00fcn m\u0259bl\u0259\u011f daxil edin',select_cat:'Kateqoriya se\u00e7in',enter_name:'Ad daxil edin',enter_goal:'D\u00fczg\u00fcn h\u0259d\u0259f daxil edin'},
 ru:{tab_finance:'\u0424\u0438\u043d\u0430\u043d\u0441\u044b',tab_piggy:'\u041a\u043e\u043f\u0438\u043b\u043a\u0430',tab_analytics:'\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430',tab_currency:'\u0412\u0430\u043b\u044e\u0442\u044b',current_balance:'\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0431\u0430\u043b\u0430\u043d\u0441',incomes:'\u0414\u043e\u0445\u043e\u0434\u044b',expenses:'\u0420\u0430\u0441\u0445\u043e\u0434\u044b',history:'\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439',empty_tx:'\u041f\u043e\u043a\u0430 \u043d\u0435\u0442 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439',income:'\u0414\u043e\u0445\u043e\u0434',expense:'\u0420\u0430\u0441\u0445\u043e\u0434',amount:'\u0421\u0443\u043c\u043c\u0430',category:'\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f',comment_ph:'\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439',add_income:'\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0434\u043e\u0445\u043e\u0434',add_expense:'\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0440\u0430\u0441\u0445\u043e\u0434',p_day:'\u0414\u0435\u043d\u044c',p_week:'\u041d\u0435\u0434\u0435\u043b\u044f',p_month:'\u041c\u0435\u0441\u044f\u0446',p_year:'\u0413\u043e\u0434',per_day:'\u0417\u0430 \u0434\u0435\u043d\u044c',per_week:'\u0417\u0430 \u043d\u0435\u0434\u0435\u043b\u044e',per_month:'\u0417\u0430 \u043c\u0435\u0441\u044f\u0446',per_year:'\u0417\u0430 \u0433\u043e\u0434',expense_by_cat:'\u0420\u0430\u0441\u0445\u043e\u0434\u044b \u043f\u043e \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f\u043c',top_expenses:'\u0422\u043e\u043f \u0440\u0430\u0441\u0445\u043e\u0434\u043e\u0432',no_data_period:'\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445 \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434',exchange_rates:'\u041a\u0443\u0440\u0441\u044b \u0432\u0430\u043b\u044e\u0442 (\u0411\u0430\u043a\u0443)',converter:'\u041a\u043e\u043d\u0432\u0435\u0440\u0442\u0435\u0440',from:'\u0418\u0437',to:'\u0412',result:'\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442',theme_dark:'\u0422\u0451\u043c\u043d\u0430\u044f',theme_light:'\u0421\u0432\u0435\u0442\u043b\u0430\u044f',theme_glass:'\u0421\u0442\u0435\u043a\u043b\u043e',hello:'\u041f\u0440\u0438\u0432\u0435\u0442',welcome:'\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c!',delete_tx:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c?',delete_tx_text:'\u042d\u0442\u043e \u043d\u0435\u043b\u044c\u0437\u044f \u043e\u0442\u043c\u0435\u043d\u0438\u0442\u044c.',delete:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c',cancel:'\u041e\u0442\u043c\u0435\u043d\u0430',new_piggy:'\u041d\u043e\u0432\u0430\u044f \u043a\u043e\u043f\u0438\u043b\u043a\u0430',piggy_name:'\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435',piggy_goal:'\u0426\u0435\u043b\u044c (\u043c\u0430\u043d\u0430\u0442)',create:'\u0421\u043e\u0437\u0434\u0430\u0442\u044c',add_to_piggy:'\u041f\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u044c',take_from_piggy:'\u0417\u0430\u0431\u0440\u0430\u0442\u044c',available:'\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e',add:'\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c',take:'\u0417\u0430\u0431\u0440\u0430\u0442\u044c',edit_piggy:'\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c',save:'\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c',delete_piggy:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c?',delete_piggy_text:'\u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043b\u0435\u043d\u0430.',create_piggy:'\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043a\u043e\u043f\u0438\u043b\u043a\u0443',surplus:'\u041f\u0440\u043e\u0444\u0438\u0446\u0438\u0442',deficit:'\u0414\u0435\u0444\u0438\u0446\u0438\u0442',cat_salary:'\u0417\u0430\u0440\u043f\u043b\u0430\u0442\u0430',cat_freelance:'\u0424\u0440\u0438\u043b\u0430\u043d\u0441',cat_invest:'\u0418\u043d\u0432\u0435\u0441\u0442\u0438\u0446\u0438\u0438',cat_gift:'\u041f\u043e\u0434\u0430\u0440\u043a\u0438',cat_other:'\u041f\u0440\u043e\u0447\u0435\u0435',cat_food:'\u041f\u0440\u043e\u0434\u0443\u043a\u0442\u044b',cat_transport:'\u0422\u0440\u0430\u043d\u0441\u043f\u043e\u0440\u0442',cat_fun:'\u0420\u0430\u0437\u0432\u043b\u0435\u0447\u0435\u043d\u0438\u044f',cat_bills:'\u041a\u043e\u043c\u043c\u0443\u043d\u0430\u043b\u044c\u043d\u044b\u0435',cat_clothes:'\u041e\u0434\u0435\u0436\u0434\u0430',cat_health:'\u0417\u0434\u043e\u0440\u043e\u0432\u044c\u0435',cat_edu:'\u041e\u0431\u0440\u0430\u0437\u043e\u0432\u0430\u043d\u0438\u0435',enter_amount:'\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u0443\u043c\u043c\u0443',select_cat:'\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044e',enter_name:'\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435',enter_goal:'\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0446\u0435\u043b\u044c'},
@@ -367,7 +373,7 @@ function t(k){return(T[lang]&&T[lang][k])||k}
 function aL(){document.querySelectorAll('[data-t]').forEach(function(e){var k=e.getAttribute('data-t');if(T[lang][k])e.textContent=T[lang][k]});document.querySelectorAll('[data-t-placeholder]').forEach(function(e){var k=e.getAttribute('data-t-placeholder');if(T[lang][k])e.placeholder=T[lang][k]});uCG();var s=document.getElementById('sB');if(s)s.textContent=txTp==='income'?t('add_income'):t('add_expense')}
 function setL(l){lang=l;svP();aL();rAll();cDD();hap()}
 function setTh(th){theme=th;document.documentElement.setAttribute('data-theme',th);document.body.setAttribute('data-theme',th);svP();cDD();hap()}
-function togDD(id){var e=document.getElementById(id);var o=e.style.display!=='none';cDD();if(!o)e.style.display='block'}
+function togDD(id,ev){var e=document.getElementById(id);var o=e.style.display!=='none';cDD();if(!o){var btn=(ev||event).currentTarget;var r=btn.getBoundingClientRect();e.style.display='block';e.style.top=(r.bottom+6)+'px';e.style.right=(window.innerWidth-r.right)+'px'}}
 function cDD(){document.querySelectorAll('.dd').forEach(function(d){d.style.display='none'})}
 document.addEventListener('click',function(e){if(!e.target.closest('.hbtn')&&!e.target.closest('.dd'))cDD()});
 function sw(n,b){document.querySelectorAll('.tc').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});document.getElementById(n+'-tab').classList.add('on');b.classList.add('on');if(n==='analytics')uAn();if(n==='piggy')rP();hap()}
@@ -375,7 +381,7 @@ function togSh(){var s=document.getElementById('sh'),o=document.getElementById('
 function clSh(){document.getElementById('sh').classList.remove('op');document.getElementById('sov').classList.remove('op');document.getElementById('fab').classList.remove('op')}
 function stT(tp){txTp=tp;selCat='';uST();uCG();hap()}
 function uST(){var i=document.getElementById('tI'),e=document.getElementById('tE'),s=document.getElementById('sB');i.classList.toggle('on',txTp==='income');e.classList.toggle('on',txTp==='expense');s.className='sbtn '+(txTp==='income'?'i':'e');s.textContent=txTp==='income'?t('add_income'):t('add_expense')}
-function uCG(){var g=document.getElementById('cG');g.innerHTML=CATS[txTp].map(function(c){return'<div class="chip'+(selCat===c.k?' on':'')+'" onclick="pCat(\''+c.k+'\')"><span>'+c.ic+'</span>'+t(c.k)+'</div>'}).join('')}
+function uCG(){var g=document.getElementById('cG');g.innerHTML=CATS[txTp].map(function(c){return'<div class="chip'+(selCat===c.k?' on':'')+'" onclick="pCat(&quot;'+c.k+'&quot;)"><span>'+c.ic+'</span>'+t(c.k)+'</div>'}).join('')}
 function pCat(k){selCat=k;uCG();hap()}
 function addTx(){var a=parseFloat(document.getElementById('txA').value);if(!a||a<=0){sA(t('enter_amount'));return}if(!selCat){sA(t('select_cat'));return}var c=document.getElementById('txC').value||'';txs.unshift({id:Date.now(),tp:txTp,a:a,ct:selCat,d:c,dt:new Date().toLocaleDateString('ru-RU'),ts:Date.now()});svD();rAll();clSh();hapN('success')}
 function delTx(id){sMod(t('delete_tx'),t('delete_tx_text'),function(){txs=txs.filter(function(x){return x.id!==id});svD();rAll();hapN('success')},t('delete'),'dg')}
